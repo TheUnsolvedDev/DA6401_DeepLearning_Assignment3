@@ -1,0 +1,106 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Attention Visualization - Multiple Words</title>
+  <style>
+    .attention-sample { margin: 25px 0; border-bottom: 1px solid #bbb; padding-bottom: 16px; }
+    .token { padding: 6px 10px; display: inline-block; margin: 2px; border-radius: 3px; font-family: sans-serif; font-size: 18px; background-color: #eee; transition: background-color 0.2s, border 0.2s, color 0.2s; }
+    .sample-header { font-size: 16px; color: #333; margin-bottom: 4px; }
+  </style>
+</head>
+<body>
+  <h2>Interactive Attention Visualization (Multiple Samples)</h2>
+  <div id="attention-matrix"></div>
+  <script>
+    // Paste your exported JSON array here:
+    const allData = REPLACE_THIS_WITH_JSON; // <--- PASTE your JSON array
+
+    const root = document.getElementById('attention-matrix');
+
+    allData.forEach((data, idx) => {
+      // --- Create sample container
+      const container = document.createElement('div');
+      container.className = 'attention-sample';
+      container.id = `sample-${idx}`;
+
+      // --- Optional: Sample header with word forms
+      const header = document.createElement('div');
+      header.className = 'sample-header';
+      header.innerHTML = `Sample ${idx + 1}: <b>${data.input.join('')}</b> → <b>${data.prediction.join('')}</b>`;
+      container.appendChild(header);
+
+      // --- Render input row
+      const inputRow = document.createElement('div');
+      inputRow.id = `input-row-${idx}`;
+      inputRow.innerHTML = data.input.map((t,i) =>
+        `<span class="token" id="input-${idx}-${i}">${t}</span>`
+      ).join('');
+      container.appendChild(inputRow);
+
+      // --- Render output row
+      const outputRow = document.createElement('div');
+      outputRow.id = `output-row-${idx}`;
+      outputRow.style.marginTop = "8px";
+      outputRow.innerHTML = data.prediction.map((t,i) =>
+        `<span class="token" id="output-${idx}-${i}">${t}</span>`
+      ).join('');
+      container.appendChild(outputRow);
+
+      root.appendChild(container);
+
+      // --- Add interactivity
+      data.prediction.forEach((outTok, outIdx) => {
+        const outSpan = document.getElementById(`output-${idx}-${outIdx}`);
+        outSpan.addEventListener('mouseover', function () {
+          highlight(idx, outIdx);
+        });
+        outSpan.addEventListener('mouseout', function () {
+          resetInputRow(idx, data.input.length);
+        });
+      });
+    });
+    function highlight(sampleIdx, outputIdx) {
+  const data = allData[sampleIdx];
+  const row = data.attention[outputIdx];
+  if (!row) return;
+  const maxVal = Math.max(...row);
+  const minVal = Math.min(...row);
+
+  // Reset first
+  resetInputRow(sampleIdx, data.input.length);
+
+  row.forEach((val, inIdx) => {
+    const span = document.getElementById(`input-${sampleIdx}-${inIdx}`);
+    if (!span) return;
+    // Linear intensity (normalized) + optional exponent for pop
+    const norm = (val - minVal) / (maxVal - minVal + 1e-8);
+    const boosted = Math.pow(norm, 0.5); // adjust 0.5 to 1.0 for more/less contrast
+
+    // RED intensity using HSL (light pink to pure red)
+    const light = 95 - boosted * 60; // 95% (very light) to 35% (red)
+    span.style.backgroundColor = `hsl(0, 100%, ${light}%)`;
+
+    // Optional: bold/underline for top tokens
+    if (boosted >= 0.85) {
+      span.style.border = '2px solid darkred';
+      span.style.color = '#fff';
+    }
+  });
+}
+
+
+    function resetInputRow(sampleIdx, N) {
+      for (let i = 0; i < N; ++i) {
+        const span = document.getElementById(`input-${sampleIdx}-${i}`);
+        if (span) {
+          span.style.backgroundColor = '#eee';
+          span.style.border = 'none';
+          span.style.color = '#000';
+        }
+      }
+    }
+  </script>
+</body>
+</html>
