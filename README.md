@@ -179,3 +179,6 @@ parameters_dict:
       values: [0.0005, 0.001, 0.003]
 
 Also Bayesian Method of sweep was used!
+
+Report link [link](https://wandb.ai/da24d402-indian-instite-of-technology-madras/DA24D402_DL_3/reports/Assignment-3--VmlldzoxMjg0NDEzMw?accessToken=64rlvrkp39lhb1zceciea2txgr2dx8tdraanygv5b8lp4u4wgcd98dpkg02f6mp3)
+Repo link [link](https://github.com/TheUnsolvedDev/DA6401_DeepLearning_Assignment3)
